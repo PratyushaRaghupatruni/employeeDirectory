@@ -6,6 +6,7 @@ import API from '../../utils/API';
 export default function TableData() {
   const [employees, setEmployees] = useState([]);
   const [allEmployees,setAllEmployees] =useState([]);
+   const [sortConfig, setSortConfig] = useState(null);
 
   useEffect(() => {
     getData();
@@ -17,8 +18,25 @@ export default function TableData() {
       setAllEmployees(response.data.results)
 
   };
+ let sortedEmployees = employees;
+   if (sortConfig !== null) {
+    employees.sort((a, b) => {
+      let forward = sortConfig[sortConfig.field + "Forward"];
+      let multiplier = 1;
+      if (!forward) multiplier = -1;
+      if (a.name[sortConfig.field] < b.name[sortConfig.field]) {
+        return -1 * multiplier;
+      }
+      if (a.name[sortConfig.field] > b.name[sortConfig.field]) {
+        return 1 * multiplier;
+      }
+      return 0;
+    });
+    console.log(sortedEmployees);
+    console.log(sortConfig);
+  }
 
-
+//date function
   function dateFormat(date) {
     const dateArray = date.split("-");
      const year = dateArray[0];
@@ -28,6 +46,7 @@ export default function TableData() {
     const formattedDate = [month, day, year].join("-");
      return formattedDate;
   }
+
   const handleInputChange = event => {
     const searchValue = event.target.value;
    console.log("search Value :" + searchValue);
@@ -45,33 +64,27 @@ export default function TableData() {
 
   };
 
- const renderHeader = () => {
-        let headerElement = ['Image', 'Name', 'Email', 'Phone', 'Birthday']
-
-        return headerElement.map((key, index) => {
-            return <th key={index} style={{ width: '20%',textAlign:'center', }}>
-              {key}
-              {key === 'Name' ? (<i class="fa fa-fw fa-sort"></i> ): ""}      
-              </th>
-        })
-    }
+ 
 
        const renderBody = () => {
-        return employees && employees.map(({ login, picture,name, email, phone,dob }) => {
+        return employees && employees.map(({ login, picture, name, email, phone,dob }) => {
             return (
                  <tr key={login.uuid}>
-                    <td data-th="Image" style={{ width: '20%',textAlign:'center', }}>
+                    <td data-th="Image" style={{ width: '15%',textAlign:'center', }}>
                        <img
                         src={picture.thumbnail}
                         alt={'Picture of  ' + name.first + ' ' + name.last}
                      />
                     </td>
-                    <td data-th="Name" style={{ width: '20%',textAlign:'center', }}>
-                      {name.first} {name.last}
+                    <td data-th=" First Name" style={{ width: '15%',textAlign:'center', }}>
+                      {name.first}
                     </td>
-                    <td data-th="Email" style={{ width: '20%',textAlign:'center', }}>{email}</td>
-                    <td data-th="Phone" style={{ width: '20%',textAlign:'center', }}>{phone}</td>
-                     <td data-th="Birthday" style={{ width: '20%',textAlign:'center', }}>{dateFormat(dob.date)}</td>
+                    <td data-th=" Last Name" style={{ width: '15%',textAlign:'center', }}>
+                      {name.last}
+                    </td>
+                    <td data-th="Email" style={{ width: '15%',textAlign:'center', }}>{email}</td>
+                    <td data-th="Phone" style={{ width: '15%',textAlign:'center', }}>{phone}</td>
+                     <td data-th="Birthday" style={{ width: '15%',textAlign:'center', }}>{dateFormat(dob.date)}</td>
                 </tr>
             )
         })
@@ -89,9 +102,27 @@ export default function TableData() {
        </Row>
          <br />
             <Table id='employee' striped hover responsive="sm">
-                <thead>
-                    <tr>{renderHeader()}</tr>
-                </thead>
+                 <caption>Employees</caption>
+                  <thead>
+                    <tr>
+                     <th style={{ width: '15%',textAlign:'center', }}>Image</th>
+                     <th style={{ width: '15%',textAlign:'center', }}><button type="button" 
+                         onClick={() =>  
+                          setSortConfig({ field: "first",firstForward: !sortConfig?.firstForward ?? true,})} >
+                          First Name </button>
+                      </th>
+                          
+                     <th style={{ width: '15%',textAlign:'center', }}><button type="button"
+                        onClick={() =>
+                           setSortConfig({ field: "last",lastForward: !sortConfig?.lastForward ?? true,})} >
+                        Last Name</button>
+                    </th>
+
+                     <th style={{ width: '15%',textAlign:'center', }}>Email</th>
+                      <th style={{ width: '15%',textAlign:'center', }}>Phone</th>
+                       <th style={{ width: '15%',textAlign:'center', }}>Birthday</th>
+                     </tr>
+                    </thead>
                 <tbody>
                    {renderBody()}
                 </tbody>
